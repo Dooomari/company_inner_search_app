@@ -59,7 +59,7 @@ if not "initialized" in st.session_state:
 # タイトル表示
 cn.display_app_title()
 
-# モード表示
+# サイドバーにモード選択を表示
 cn.display_select_mode()
 
 # AIメッセージの初期表示
@@ -84,7 +84,8 @@ except Exception as e:
 ############################################################
 # 6. チャット入力の受け付け
 ############################################################
-chat_message = st.chat_input(ct.CHAT_INPUT_HELPER_TEXT)
+# 日本語IME変換確定のEnterでの誤送信を防ぐためchat_message = st.chat_input(ct.CHAT_INPUT_HELPER_TEXT)を以下に変更
+chat_message = cn.get_user_input()
 
 
 ############################################################

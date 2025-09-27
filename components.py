@@ -23,17 +23,12 @@ def display_app_title():
 
 def display_select_mode():
     """
-    回答モードのラジオボタンを表示
+    回答モードのラジオボタンをサイドバーに表示
     """
-    # 回答モードを選択する用のラジオボタンを表示
-    col1, col2 = st.columns([100, 1])
-    with col1:
-        # 「label_visibility="collapsed"」とすることで、ラジオボタンを非表示にする
-        st.session_state.mode = st.radio(
-            label="",
-            options=[ct.ANSWER_MODE_1, ct.ANSWER_MODE_2],
-            label_visibility="collapsed"
-        )
+    st.session_state.mode = st.sidebar.radio(
+        "利用目的を選択してください",
+        options=[ct.ANSWER_MODE_1, ct.ANSWER_MODE_2]
+    )
 
 
 def display_initial_ai_message():
@@ -42,8 +37,10 @@ def display_initial_ai_message():
     """
     with st.chat_message("assistant"):
         # 「st.success()」とすると緑枠で表示される
-        st.markdown("こんにちは。私は社内文書の情報をもとに回答する生成AIチャットボットです。上記で利用目的を選択し、画面下部のチャット欄からメッセージを送信してください。")
-
+        st.success("こんにちは。私は社内文書の情報をもとに回答する生成AIチャットボットです。上記で利用目的を選択し、画面下部のチャット欄からメッセージを送信してください。")
+        st.warning("具体的に入力したほうが期待通りの回答を得やすいです。", icon="⚠️" )
+    
+    with st.sidebar:
         # 「社内文書検索」の機能説明
         st.markdown("**【「社内文書検索」を選択した場合】**")
         # 「st.info()」を使うと青枠で表示される
@@ -158,9 +155,9 @@ def display_search_llm_response(llm_response):
         # ページ番号が取得できた場合のみ、ページ番号を表示（ドキュメントによっては取得できない場合がある）
         if "page" in llm_response["context"][0].metadata:
             # ページ番号を取得
-            main_page_number = llm_response["context"][0].metadata["page"]
+            main_page_number = llm_response["context"][0].metadata["page"] + 1  # ページ番号は0始まりで格納されているため、1を加算して調整  
             # 「メインドキュメントのファイルパス」と「ページ番号」を表示
-            st.success(f"{main_file_path}", icon=icon)
+            st.success(f"{main_file_path}（{main_page_number}ページ）", icon=icon)
         else:
             # 「メインドキュメントのファイルパス」を表示
             st.success(f"{main_file_path}", icon=icon)
@@ -193,7 +190,7 @@ def display_search_llm_response(llm_response):
             # ページ番号が取得できない場合のための分岐処理
             if "page" in document.metadata:
                 # ページ番号を取得
-                sub_page_number = document.metadata["page"]
+                sub_page_number = document.metadata["page"] + 1  # ページ番号は0始まりで格納されているため、1を加算して調整 
                 # 「サブドキュメントのファイルパス」と「ページ番号」の辞書を作成
                 sub_choice = {"source": sub_file_path, "page_number": sub_page_number}
             else:
@@ -216,7 +213,7 @@ def display_search_llm_response(llm_response):
                 # ページ番号が取得できない場合のための分岐処理
                 if "page_number" in sub_choice:
                     # 「サブドキュメントのファイルパス」と「ページ番号」を表示
-                    st.info(f"{sub_choice['source']}", icon=icon)
+                    st.info(f"{sub_choice['source']}（{sub_choice['page_number']}ページ）", icon=icon)
                 else:
                     # 「サブドキュメントのファイルパス」を表示
                     st.info(f"{sub_choice['source']}", icon=icon)
@@ -296,7 +293,7 @@ def display_contact_llm_response(llm_response):
                 # ページ番号を取得
                 page_number = document.metadata["page"]
                 # 「ファイルパス」と「ページ番号」
-                file_info = f"{file_path}"
+                file_info = f"{file_path}（{page_number}ページ）"
             else:
                 # 「ファイルパス」のみ
                 file_info = f"{file_path}"
@@ -325,3 +322,21 @@ def display_contact_llm_response(llm_response):
         content["file_info_list"] = file_info_list
 
     return content
+
+
+
+def get_user_input():
+    """
+    日本語入力中にEnterを押しても誤送信されない入力欄
+    """
+    st.divider()
+    st.markdown("#### メッセージを入力")
+    user_input = st.text_area(
+        "質問を入力してください（Enterで変換確定、送信はボタン）",
+        height=100,
+        placeholder="ここに質問を入力してください"
+    )
+    submit = st.button("送信")
+    if submit and user_input.strip():
+        return user_input
+    return None
