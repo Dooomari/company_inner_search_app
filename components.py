@@ -38,7 +38,7 @@ def display_initial_ai_message():
     with st.chat_message("assistant"):
         # 「st.success()」とすると緑枠で表示される
         st.success("こんにちは。私は社内文書の情報をもとに回答する生成AIチャットボットです。上記で利用目的を選択し、画面下部のチャット欄からメッセージを送信してください。")
-        st.warning("具体的に入力したほうが期待通りの回答を得やすいです。", icon="⚠️" )
+        st.warning(':material/warning: 具体的に入力したほうが期待通りの回答を得やすいです。') # 「st.warning()」を使うと黄色枠で表示される。st.warning("テキスト", icon="⚠️" )もある
     
     with st.sidebar:
         # 「社内文書検索」の機能説明
@@ -157,7 +157,7 @@ def display_search_llm_response(llm_response):
             # ページ番号を取得
             main_page_number = llm_response["context"][0].metadata["page"] + 1  # ページ番号は0始まりで格納されているため、1を加算して調整  
             # 「メインドキュメントのファイルパス」と「ページ番号」を表示
-            st.success(f"{main_file_path}（{main_page_number}ページ）", icon=icon)
+            st.success(f"{main_file_path}（ページNo.{main_page_number}）", icon=icon)
         else:
             # 「メインドキュメントのファイルパス」を表示
             st.success(f"{main_file_path}", icon=icon)
@@ -213,7 +213,7 @@ def display_search_llm_response(llm_response):
                 # ページ番号が取得できない場合のための分岐処理
                 if "page_number" in sub_choice:
                     # 「サブドキュメントのファイルパス」と「ページ番号」を表示
-                    st.info(f"{sub_choice['source']}（{sub_choice['page_number']}ページ）", icon=icon)
+                    st.info(f"{sub_choice['source']}（ページNo.{sub_choice['page_number']}）", icon=icon)
                 else:
                     # 「サブドキュメントのファイルパス」を表示
                     st.info(f"{sub_choice['source']}", icon=icon)
@@ -327,16 +327,7 @@ def display_contact_llm_response(llm_response):
 
 def get_user_input():
     """
-    日本語入力中にEnterを押しても誤送信されない入力欄
+    チャット形式の入力欄（Enterで送信）
     """
-    st.divider()
-    st.markdown("#### メッセージを入力")
-    user_input = st.text_area(
-        "質問を入力してください（Enterで変換確定、送信はボタン）",
-        height=100,
-        placeholder="ここに質問を入力してください"
-    )
-    submit = st.button("送信")
-    if submit and user_input.strip():
-        return user_input
-    return None
+    chat_message = st.chat_input("質問を入力してください（Enterで送信）")
+    return chat_message

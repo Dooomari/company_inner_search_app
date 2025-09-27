@@ -121,13 +121,11 @@ def initialize_retriever():
     # 埋め込みモデルの用意
     embeddings = OpenAIEmbeddings()
     
-    # チャンク分割のパラメータを定数化
-    CHUNK_SIZE = 500
-    CHUNK_OVERLAP = 50
+
     # チャンク分割用のオブジェクトを作成
     text_splitter = CharacterTextSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP,
+        chunk_size=ct.CHUNK_SIZE,
+        chunk_overlap=ct.CHUNK_OVERLAP,
         separator="\n"
     )
 
@@ -137,10 +135,9 @@ def initialize_retriever():
     # ベクターストアの作成
     db = Chroma.from_documents(splitted_docs, embedding=embeddings)
 
-    # 検索時に返す件数（マジックナンバーを変数化）
-    RETRIEVER_TOP_K = 5
+
     # ベクターストアを検索するRetrieverの作成
-    st.session_state.retriever = db.as_retriever(search_kwargs={"k": RETRIEVER_TOP_K})
+    st.session_state.retriever = db.as_retriever(search_kwargs={"k": ct.RETRIEVER_TOP_K})
 
 
 def initialize_session_state():
@@ -247,3 +244,23 @@ def adjust_string(s):
     
     # OSがWindows以外の場合はそのまま返す
     return s
+
+def initialize():
+    logger = logging.getLogger(ct.LOGGER_NAME)
+    try:
+        logger.info("initialize_session_state 開始")
+        initialize_session_state()
+
+        logger.info("initialize_session_id 開始")
+        initialize_session_id()
+
+        logger.info("initialize_logger 開始")
+        initialize_logger()
+
+        logger.info("initialize_retriever 開始")
+        initialize_retriever()
+
+        logger.info("初期化成功")
+    except Exception as e:
+        logger.error(f"初期化中にエラー: {e}")
+        raise e
